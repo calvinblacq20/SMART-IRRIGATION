@@ -23,9 +23,6 @@ build/
 # Archive / superseded prototypes
 _archive_superseded/
 
-# Large binary background media (too big for git; copy manually)
-webapp/bg.mp4
-
 # Python build scripts (not part of the submission)
 build_final_cm.py
 render_previews.py
