@@ -1,0 +1,4 @@
+# Wokwi auto-installs these before building
+DHT sensor library
+Adafruit Unified Sensor
+LiquidCrystal I2C

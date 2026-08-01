@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "author": "Calvin",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-lcd2004", "id": "lcd", "top": -300, "left": 190, "attrs": { "pins": "i2c" } },
+    { "type": "wokwi-dht22", "id": "dht", "top": -160, "left": -260, "attrs": {} },
+    { "type": "wokwi-potentiometer", "id": "soil", "top": 40, "left": -320, "attrs": { "value": "300" } },
+    { "type": "wokwi-photoresistor-sensor", "id": "ldr", "top": 210, "left": -300, "attrs": {} },
+    { "type": "wokwi-relay-module", "id": "relay", "top": -60, "left": 330, "attrs": { "transistor": "pnp" } },
+    { "type": "wokwi-resistor", "id": "rG", "top": 150, "left": 250, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "rR", "top": 230, "left": 250, "attrs": { "value": "220" } },
+    { "type": "wokwi-led", "id": "ledG", "top": 150, "left": 360, "attrs": { "color": "green", "label": "OK" } },
+    { "type": "wokwi-led", "id": "ledR", "top": 230, "left": 360, "attrs": { "color": "red", "label": "PUMP/ALERT" } },
+    { "type": "wokwi-pushbutton", "id": "btnManual", "top": 360, "left": -180, "attrs": { "color": "green", "label": "MANUAL" } },
+    { "type": "wokwi-pushbutton", "id": "btnMenu", "top": 360, "left": -20, "attrs": { "color": "blue", "label": "MENU" } },
+    { "type": "wokwi-pushbutton", "id": "btnSet", "top": 360, "left": 140, "attrs": { "color": "yellow", "label": "SET" } }
+  ],
+  "connections": [
+    [ "esp:3V3", "dht:VCC", "red", [] ],
+    [ "esp:3V3", "soil:VCC", "red", [] ],
+    [ "esp:3V3", "ldr:VCC", "red", [] ],
+    [ "esp:3V3", "lcd:VCC", "red", [] ],
+    [ "esp:VIN", "relay:VCC", "red", [] ],
+
+    [ "esp:GND.1", "dht:GND", "black", [] ],
+    [ "esp:GND.1", "soil:GND", "black", [] ],
+    [ "esp:GND.1", "ldr:GND", "black", [] ],
+    [ "esp:GND.1", "lcd:GND", "black", [] ],
+    [ "esp:GND.2", "relay:GND", "black", [] ],
+    [ "esp:GND.2", "btnManual:2.l", "black", [] ],
+    [ "esp:GND.2", "btnMenu:2.l", "black", [] ],
+    [ "esp:GND.2", "btnSet:2.l", "black", [] ],
+    [ "esp:GND.2", "ledG:C", "black", [] ],
+    [ "esp:GND.2", "ledR:C", "black", [] ],
+
+    [ "esp:D4", "dht:SDA", "green", [] ],
+    [ "esp:D34", "soil:SIG", "green", [] ],
+    [ "esp:D35", "ldr:AO", "green", [] ],
+    [ "esp:D18", "lcd:SDA", "blue", [] ],
+    [ "esp:D19", "lcd:SCL", "blue", [] ],
+    [ "esp:D22", "relay:IN", "green", [] ],
+    [ "esp:D25", "btnManual:1.l", "green", [] ],
+    [ "esp:D26", "btnMenu:1.l", "green", [] ],
+    [ "esp:D27", "btnSet:1.l", "green", [] ],
+
+    [ "esp:D17", "rG:1", "green", [] ],
+    [ "rG:2", "ledG:A", "green", [] ],
+    [ "esp:D16", "rR:1", "green", [] ],
+    [ "rR:2", "ledR:A", "green", [] ]
+  ]
+}
