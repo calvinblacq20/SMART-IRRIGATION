@@ -1,5 +1,11 @@
 # Run the Smart Irrigation System live in Wokwi (free, in your browser)
 
+> **Note on the board.** The shipped/graded firmware is the ESP8266 REST build
+> (`../smart_irrigation_esp8266/`). Wokwi does **not** provide an ESP8266/NodeMCU board,
+> so this folder is a **control-logic demonstration on an ESP32** — the same hysteresis,
+> pump and safety behaviour, visualised with an LCD + LEDs you don't need on the real board.
+> Use it to show the logic working; use the ESP8266 sketch + the PWA for the real system.
+
 Wokwi is a free online simulator — no install, no login needed to run.
 You "open" this project the same way you imported the STL into Onshape:
 create a blank ESP32 project, then paste in these two files.

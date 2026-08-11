@@ -20,6 +20,12 @@ build/
 *.hex
 *.elf
 
+# Node / Vite PWA (webapp/)
+node_modules/
+dist/
+.vite/
+*.local
+
 # Archive / superseded prototypes
 _archive_superseded/
 

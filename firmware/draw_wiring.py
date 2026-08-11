@@ -1,6 +1,6 @@
 """
 Generate a clean B&W wiring / connection diagram for the Smart Irrigation firmware.
-ESP32 in the centre, components around it, signal wires labelled with the GPIO pin.
+ESP8266 (NodeMCU) in the centre, components around it, signal wires labelled with the pin.
 Output: wiring_diagram.png
 """
 import os
@@ -14,7 +14,7 @@ INK = "#111111"
 BOX = "#ececec"
 MCU = "#d5d5d5"
 
-fig, ax = plt.subplots(figsize=(13.5, 8.6))
+fig, ax = plt.subplots(figsize=(13.5, 8.0))
 ax.set_xlim(0, 15); ax.set_ylim(0, 10); ax.axis("off")
 
 
@@ -25,33 +25,26 @@ def box(x, y, w, h, label, fc=BOX, fs=10, bold=True):
             fontsize=fs, fontweight="bold" if bold else "normal", color=INK)
 
 
-def wire(p1, p2, label="", lx=None, ly=None, fs=8.5):
+def wire(p1, p2, label="", lx=None, ly=None, fs=9):
     (x1, y1), (x2, y2) = p1, p2
-    ax.plot([x1, x2], [y1, y2], color=INK, linewidth=1.1, zorder=1)
-    ax.plot([x1, x2], [y1, y2], "o", color=INK, markersize=2.5, zorder=2)
+    ax.plot([x1, x2], [y1, y2], color=INK, linewidth=1.2, zorder=1)
+    ax.plot([x1, x2], [y1, y2], "o", color=INK, markersize=2.6, zorder=2)
     if label:
         ax.text(lx if lx is not None else (x1 + x2) / 2,
                 ly if ly is not None else (y1 + y2) / 2 + 0.12, label,
                 ha="center", va="bottom", fontsize=fs, color=INK,
-                bbox=dict(boxstyle="round,pad=0.1", fc="white", ec="none"))
+                bbox=dict(boxstyle="round,pad=0.12", fc="white", ec="none"))
 
 
-# ---------------- ESP32 ----------------
-EX, EW = 6.2, 2.6
-ax.add_patch(Rectangle((EX, 1.4), EW, 7.2, linewidth=1.8, edgecolor=INK, facecolor=MCU))
-ax.text(EX + EW / 2, 8.25, "ESP32", ha="center", va="center", fontsize=13, fontweight="bold", color=INK)
-ax.text(EX + EW / 2, 7.85, "DEV MODULE", ha="center", va="center", fontsize=8.5, color=INK)
+# ---------------- ESP8266 / NodeMCU ----------------
+EX, EW = 6.4, 2.6
+ax.add_patch(Rectangle((EX, 2.4), EW, 5.6, linewidth=1.8, edgecolor=INK, facecolor=MCU))
+ax.text(EX + EW / 2, 7.6, "ESP8266", ha="center", va="center", fontsize=13, fontweight="bold", color=INK)
+ax.text(EX + EW / 2, 7.2, "NodeMCU", ha="center", va="center", fontsize=8.5, color=INK)
 
-# left pins (x at EX) and right pins (x at EX+EW)
 Lx, Rx = EX, EX + EW
-Lpin = {  # gpio : y
-    "GPIO4": 7.15, "GPIO34": 6.55, "GPIO35": 5.95,
-    "GPIO25": 4.75, "GPIO26": 4.15, "GPIO27": 3.55,
-}
-Rpin = {
-    "GPIO18": 7.15, "GPIO19": 6.6, "GPIO22": 5.7, "GPIO23": 5.15,
-    "GPIO17": 4.1, "GPIO16": 3.5,
-}
+Lpin = {"A0": 6.3, "D2 (GPIO4)": 5.0}     # inputs on the left
+Rpin = {"D6 (GPIO12)": 5.5}                # output on the right
 for name, y in Lpin.items():
     ax.plot([Lx - 0.18, Lx], [y, y], color=INK, lw=1.1)
     ax.text(Lx + 0.12, y, name, ha="left", va="center", fontsize=8, color=INK)
@@ -60,53 +53,30 @@ for name, y in Rpin.items():
     ax.text(Rx - 0.12, y, name, ha="right", va="center", fontsize=8, color=INK)
 
 # ---------------- LEFT components (inputs) ----------------
-box(0.5, 6.85, 2.2, 0.7, "DHT11")
-wire((2.7, 7.2), (Lx - 0.18, Lpin["GPIO4"]), "DATA", lx=4.4, ly=7.3)
+box(0.6, 6.0, 2.6, 0.7, "Soil Moisture")
+wire((3.2, 6.35), (Lx - 0.18, Lpin["A0"]), "AOUT -> A0", lx=4.7, ly=6.45)
 
-box(0.5, 6.2, 2.2, 0.55, "Soil Moisture")
-wire((2.7, 6.5), (Lx - 0.18, Lpin["GPIO34"]), "A0", lx=4.4, ly=6.62)
+box(0.6, 4.65, 2.6, 0.7, "DHT22")
+wire((3.2, 5.0), (Lx - 0.18, Lpin["D2 (GPIO4)"]), "DATA -> D2", lx=4.7, ly=5.1)
 
-box(0.5, 5.6, 2.2, 0.5, "LDR Module")
-wire((2.7, 5.85), (Lx - 0.18, Lpin["GPIO35"]), "OUT", lx=4.4, ly=5.98)
-
-box(0.5, 4.5, 2.2, 0.55, "Btn MANUAL")
-wire((2.7, 4.77), (Lx - 0.18, Lpin["GPIO25"]), "", )
-box(0.5, 3.9, 2.2, 0.5, "Btn MENU")
-wire((2.7, 4.15), (Lx - 0.18, Lpin["GPIO26"]), "")
-box(0.5, 3.3, 2.2, 0.5, "Btn SETTINGS")
-wire((2.7, 3.55), (Lx - 0.18, Lpin["GPIO27"]), "")
-ax.text(3.4, 4.05, "to GND", fontsize=7.5, style="italic", color=INK, rotation=0)
-
-# ---------------- RIGHT components (outputs) ----------------
-box(11.6, 6.55, 2.6, 0.9, "LCD 20x4 (I2C)")
-wire((Rx + 0.18, Rpin["GPIO18"]), (11.6, 7.15), "SDA", lx=10.4, ly=7.25)
-wire((Rx + 0.18, Rpin["GPIO19"]), (11.6, 6.8), "SCL", lx=10.4, ly=6.55)
-
-box(11.6, 5.0, 2.0, 0.9, "Relay 2-ch")
-wire((Rx + 0.18, Rpin["GPIO22"]), (11.6, 5.65), "IN1", lx=10.4, ly=5.72)
-wire((Rx + 0.18, Rpin["GPIO23"]), (11.6, 5.25), "IN2", lx=10.4, ly=5.0)
-box(13.9, 5.05, 1.0, 0.8, "Pump", fc="white")
-ax.annotate("", xy=(13.9, 5.45), xytext=(13.6, 5.45),
+# ---------------- RIGHT components (output) ----------------
+box(11.4, 5.15, 2.2, 0.9, "Relay Module")
+wire((Rx + 0.18, Rpin["D6 (GPIO12)"]), (11.4, 5.6), "IN -> D6", lx=10.4, ly=5.7)
+box(13.8, 5.2, 1.0, 0.8, "Pump", fc="white")
+ax.annotate("", xy=(13.8, 5.6), xytext=(13.6, 5.6),
             arrowprops=dict(arrowstyle="->", color=INK, lw=1.2))
-ax.text(13.75, 5.95, "COM/NO", fontsize=7, color=INK, ha="center")
-
-box(11.6, 3.75, 2.0, 0.5, "LED Green", fc="white")
-wire((Rx + 0.18, Rpin["GPIO17"]), (11.6, 4.0), "220Ω", lx=10.4, ly=4.1)
-box(11.6, 3.15, 2.0, 0.5, "LED Red", fc="white")
-wire((Rx + 0.18, Rpin["GPIO16"]), (11.6, 3.4), "220Ω", lx=10.4, ly=3.25)
+ax.text(13.62, 6.12, "COM / NO", fontsize=7.5, color=INK, ha="center")
 
 # ---------------- power / notes ----------------
-ax.add_patch(FancyBboxPatch((0.5, 0.35), 14.0, 1.15, boxstyle="round,pad=0.05,rounding_size=0.08",
+ax.add_patch(FancyBboxPatch((0.5, 0.5), 14.0, 1.35, boxstyle="round,pad=0.05,rounding_size=0.08",
                             linewidth=1.2, edgecolor=INK, facecolor="#f6f6f6"))
-ax.text(0.75, 1.18, "POWER & COMMON CONNECTIONS", fontsize=9, fontweight="bold", color=INK, va="center")
-notes = ("Sensor VCC → 3V3   •   all GND → common GND   •   Relay VCC → 5V (VIN)   "
-         "•   button other leg → GND (internal pull-ups)")
-notes2 = ("LEDs: anode → GPIO via 220Ω, cathode → GND   •   "
-          "Pump powered from battery through relay COM/NO (add flyback diode)")
-ax.text(0.75, 0.85, notes, fontsize=8.4, color=INK, va="center")
-ax.text(0.75, 0.55, notes2, fontsize=8.4, color=INK, va="center")
+ax.text(0.8, 1.55, "POWER & COMMON CONNECTIONS", fontsize=9.5, fontweight="bold", color=INK, va="center")
+ax.text(0.8, 1.18, "Sensor VCC -> 3V3    -    all GND -> common GND    -    Relay VCC -> 5V (VIN)    "
+        "-    Relay is active-HIGH (RELAY_ON = HIGH)", fontsize=8.6, color=INK, va="center")
+ax.text(0.8, 0.82, "Pump powered from its own supply through the relay COM/NO contacts (add a "
+        "flyback diode across an inductive pump).", fontsize=8.6, color=INK, va="center")
 
-ax.text(7.5, 9.5, "SMART IRRIGATION SYSTEM — ESP32 WIRING / CONNECTION DIAGRAM",
+ax.text(7.5, 9.4, "SMART IRRIGATION SYSTEM - ESP8266 WIRING / CONNECTION DIAGRAM",
         ha="center", va="center", fontsize=13, fontweight="bold", color=INK)
 
 fig.tight_layout()

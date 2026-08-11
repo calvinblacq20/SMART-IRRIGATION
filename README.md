@@ -35,23 +35,26 @@ Sensors ──► ESP32 ──► Relay ──► Pump
 Soil / DHT11 / LDR
 ```
 
-- **Firmware (device):** `firmware/smart_irrigation/smart_irrigation.ino` — sensors, control,
-  LCD menu, LEDs, settings saved to flash (NVS).
+- **Firmware (active — ESP8266):** `firmware/smart_irrigation_esp8266/smart_irrigation_esp8266.ino`
+  — the current connection layer: sensors, hysteresis control, REST + JSON API, mDNS. The dashboard
+  is wired to this. (An earlier ESP32 build with LCD/LEDs/NVS lives in `firmware/smart_irrigation/`.)
 - **Simulation:** `firmware/wokwi/` — runs the whole thing in the browser at wokwi.com.
-- **Web dashboard:** `webapp/index.html` — standalone site, live + demo modes, responsive
-  (desktop + mobile), talks to the device API.
-- **Device API:** a Wi-Fi web server on the ESP32 exposing the JSON the dashboard reads/writes.
-  Lives in `firmware/smart_irrigation/smart_irrigation_wifi.ino` — compiled with the main sketch automatically.
+- **Web dashboard:** `webapp/` — an installable **PWA** (Vite, vanilla JS) that talks directly
+  to the board's REST API, with an offline app-shell service worker, live 3 s polling, and a
+  full-bleed video background. Needs no build step to run (plain ES modules).
+- **Device API:** a Wi-Fi web server on the ESP8266 exposing the JSON the dashboard reads/writes.
 
-### Web API contract (dashboard already coded to this)
+### Web API contract (dashboard is coded to this)
 | Method/Path | Purpose |
 |---|---|
-| `GET /api/state` | full live state as JSON |
-| `GET /api/pump?on=1\|0` | manual pump on/off |
-| `GET /api/mode?m=auto\|manual` | switch mode |
-| `GET /api/set?dry=&wet=&maxrun=&cooldown=&night=` | update settings |
+| `GET /api/status` | full live state as JSON (`soilMoisture, temperature, humidity, pump, mode, sensorError, …`) |
+| `GET /api/config` | thresholds: `startThreshold, stopThreshold, maxRuntimeMs` |
+| `POST /api/pump` | body `{ "state": true\|false }` — manual pump (forces manual mode) |
+| `POST /api/mode` | body `{ "mode": "auto"\|"manual" }` |
+| `POST /api/config` | body `{ startThreshold, stopThreshold, maxRuntimeMs }` — update + clamp |
 
 All responses send `Access-Control-Allow-Origin: *` so the standalone site can call the board.
+mDNS is enabled — the board is reachable at `http://smart-irrigation.local`.
 
 ---
 
@@ -59,11 +62,12 @@ All responses send `Access-Control-Allow-Origin: *` so the standalone site can c
 
 | Path | What |
 |---|---|
-| `firmware/smart_irrigation/` | production firmware (DHT11) |
+| `firmware/smart_irrigation_esp8266/` | **active firmware** — ESP8266, DHT22, REST/JSON API + mDNS |
+| `firmware/smart_irrigation/` | earlier ESP32 build (DHT11, LCD, LEDs, NVS) |
 | `firmware/wokwi/` | Wokwi sim: `diagram.json`, `sketch.ino`, `libraries.txt` |
 | `firmware/wiring_diagram.png` | connection diagram |
-| `webapp/index.html` | web dashboard (self-contained) |
-| `webapp/bg.mp4`, `bg.jpg` | dashboard background media |
+| `webapp/` | PWA dashboard — `index.html`, `app.js`, `styles.css`, `sw.js`, `manifest.json` (+ `package.json`/`vite.config.js` for the dev server) |
+| `webapp/bg.mp4`, `bg.jpg` | dashboard background video + poster |
 | `*.stl` / `*.step` | 3D enclosure (body + lid), 150×120×60 mm |
 | `Project29_*_Report.docx` | enclosure + firmware/software reports |
 
@@ -71,22 +75,22 @@ All responses send `Access-Control-Allow-Origin: *` so the standalone site can c
 
 ## 4. How to run each piece
 
-- **Flash the board:** open `firmware/smart_irrigation/smart_irrigation.ino` in Arduino IDE,
-  board = *ESP32 Dev Module*, install the DHT + LiquidCrystal_I2C libraries, upload.
-- **Simulate:** paste `firmware/wokwi/diagram.json` and `sketch.ino` into a new ESP32 project
-  at wokwi.com, add the libraries, press play.
-- **Dashboard:** open `webapp/index.html` in a browser (Demo mode runs with no hardware).
-  Enter the board's IP in the connection dialog to go live.
+- **Flash the board:** open `firmware/smart_irrigation_esp8266/smart_irrigation_esp8266.ino`
+  in Arduino IDE, board = *NodeMCU 1.0 (ESP-12E)*, install **DHT sensor library** + **ArduinoJson**,
+  fill in your Wi-Fi SSID/password, upload. The Serial monitor prints the IP.
+- **Simulate:** `firmware/wokwi/` — logic demonstration at wokwi.com.
+- **Dashboard (PWA):** from `webapp/`, run `npm install` then `npm run dev -- --host`
+  (or just serve the folder: `python -m http.server 8000`). Open it on a phone/laptop on the
+  **same Wi-Fi**, then Connect to `http://smart-irrigation.local` (or the board's IP). "Install"
+  adds it to the home screen; the app shell then works offline.
 
 ---
 
-## 5. Status & remaining work (priority order)
+## 5. Status & remaining work
 
-1. **Device-API firmware** ✅ — `smart_irrigation_wifi.ino` adds Wi-Fi + HTTP API.
-   Fill in your SSID/password, flash, and the dashboard drives the real board.
-2. **Version control** — the enclosing git repo is the whole home folder with no commits;
-   give this project its own repo and an initial commit. Add a `.gitignore` (below).
-3. **A control-logic test** — the hysteresis/safety logic is pure and should have one unit test.
-4. **Performance** — `bg.mp4` is ~2.7 MB; fine locally, compress/lazy-load if hosted.
-5. **Deploy** (optional) — host the dashboard on a static host if remote access is wanted
-   (note: an HTTPS host cannot call an `http://` board — keep the site on the local network).
+1. **Firmware + PWA** ✅ — ESP8266 REST firmware and the PWA dashboard speak the same contract.
+   Fill in your SSID/password, flash, connect.
+2. **Enclosure** — the 3D enclosure still carries an LCD window / button holes from the earlier
+   ESP32 build; the ESP8266 build has no on-device UI, so those provisions are now optional.
+3. **Deploy** (optional) — the PWA runs from any static host, but an HTTPS host cannot call an
+   `http://` board (mixed content), so keep it on the local network for live control.
