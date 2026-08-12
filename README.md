@@ -93,8 +93,12 @@ mDNS is enabled — the board is reachable at `http://smart-irrigation.local`.
 - **Flash the board:** open `firmware/smart_irrigation_esp8266/smart_irrigation_esp8266.ino`
   in Arduino IDE, board = *NodeMCU 1.0 (ESP-12E)*, Flash Size = *4MB (FS:2MB OTA:~1019KB)*
   (the default on most boards), install **DHT sensor library** + **Adafruit Unified Sensor** +
-  **ArduinoJson**, fill in your Wi-Fi SSID/password, upload. The Serial monitor prints the IP
-  and the dashboard URL.
+  **ArduinoJson** + **LiquidCrystal I2C** (Frank de Brabander), fill in your Wi-Fi SSID/password,
+  upload. The Serial monitor prints the IP and the dashboard URL.
+  **v2.0.0 pin map:** soil → A0, DHT22 → **D7** (GPIO13 — D2 is now the I2C bus), relay → D6,
+  20x4 I2C LCD (addr `0x27`) → D2 (SDA) / D1 (SCL), Manual button → D5 (to GND), Auto button →
+  **D3/GPIO0** (to GND — don't hold it while powering on/resetting, it's the boot-mode pin).
+  Settings persist across reboots (EEPROM).
 - **Upload the on-board dashboard (LittleFS) — do this once, separately from the sketch upload:**
   install the LittleFS uploader tool — IDE 2.x: the *arduino-littlefs-upload* plugin
   ([releases](https://github.com/earlephilhower/arduino-littlefs-upload/releases), drop the
