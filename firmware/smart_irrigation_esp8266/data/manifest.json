@@ -1,0 +1,18 @@
+{
+  "name": "Smart Irrigation System",
+  "short_name": "Smart Irrigation",
+  "description": "Local PWA Dashboard for Smart Irrigation System ESP8266 Controller",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#090d16",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='128' fill='%230f172a'/><path d='M256 64 C256 64 128 224 128 320 C128 390.7 185.3 448 256 448 C326.7 448 384 390.7 384 320 C384 224 256 64 256 64 Z' fill='%2310b981'/><path d='M220 260 C220 260 170 310 180 360' stroke='%2334d399' stroke-width='24' stroke-linecap='round' fill='none'/></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

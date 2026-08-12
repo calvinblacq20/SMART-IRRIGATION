@@ -14,11 +14,36 @@
   mDNS: http://smart-irrigation.local
 
   Libraries (Library Manager): DHT sensor library (Adafruit), ArduinoJson (v6).
-  ESP8266WiFi / ESP8266WebServer / ESP8266mDNS ship with the ESP8266 core.
+  ESP8266WiFi / ESP8266WebServer / ESP8266mDNS / LittleFS ship with the core.
+
+  === DASHBOARD IS SERVED FROM THE BOARD ITSELF ===
+  The data/ folder next to this .ino holds a lightweight build of the
+  dashboard (index.html, manifest.json, sw.js — no video background, it's
+  too large for on-board flash). It must be uploaded to LittleFS SEPARATELY
+  from the sketch, using the Arduino IDE's LittleFS uploader tool:
+    - IDE 2.x (2.2.1+): "arduino-littlefs-upload" plugin
+        github.com/earlephilhower/arduino-littlefs-upload — download the
+        .vsix from its Releases page, place it in
+        <home>\.arduinoIDE\plugins\ (Windows) and restart the IDE, then
+        Ctrl+Shift+P -> "Upload LittleFS to Pico/ESP8266/ESP32"
+        (close the Serial Monitor first or the upload will fail)
+    - IDE 1.x: "ESP8266 LittleFS Data Upload" plugin
+        github.com/earlephilhower/arduino-esp8266littlefs-plugin — unpack
+        into <sketchbook>/tools/, restart, then Tools -> ESP8266 LittleFS
+        Data Upload
+  Board setting: Tools -> Flash Size -> "4MB (FS:2MB OTA:~1019KB)" (default
+  on most NodeMCU boards) — the dashboard is ~60 KB, comfortably inside 2 MB.
+  Verified: this exact data/ folder builds and round-trips through
+  mklittlefs with the files byte-identical, and the sketch compiles clean
+  (esp8266:esp8266 core 3.1.2) with the LittleFS routes registered.
+  If LittleFS isn't uploaded (or fails to mount), the API still works fine —
+  only the on-board dashboard route is skipped; use webapp/index.html
+  (laptop-served, full video background) instead.
 ==============================================================================*/
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
+#include <LittleFS.h>
 #include <DHT.h>
 #include <ArduinoJson.h>
 
@@ -98,6 +123,7 @@ void setup() {
 
   initializePins();
   initializeSensors();
+  initializeFilesystem();
   initializeWiFi();
   initializeWebServer();
   initializeMDNS();
@@ -133,6 +159,20 @@ void initializeSensors() {
   Serial.println(F("Sensors initialized."));
 }
 
+// Mounts the on-flash filesystem holding the dashboard (data/index.html,
+// manifest.json, sw.js). Upload it with the "ESP8266 LittleFS Filesystem
+// Uploader" tool (Sketch data folder). API routes still work even if this
+// fails — the dashboard just won't be served from the board itself.
+bool filesystemOk = false;
+void initializeFilesystem() {
+  filesystemOk = LittleFS.begin();
+  if (filesystemOk) {
+    Serial.println(F("LittleFS mounted — dashboard will be served from the board."));
+  } else {
+    Serial.println(F("LittleFS mount FAILED — upload the data/ folder with the LittleFS tool."));
+  }
+}
+
 void initializeWiFi() {
   Serial.print(F("Connecting to WiFi: "));
   Serial.println(WIFI_SSID);
@@ -151,6 +191,9 @@ void initializeWiFi() {
     Serial.println(F("\nWiFi connected."));
     Serial.print(F("IP address: "));
     Serial.println(WiFi.localIP());
+    Serial.print(F("Dashboard:  http://"));
+    Serial.println(WiFi.localIP());
+    Serial.println(F("       or: http://smart-irrigation.local"));
   } else {
     Serial.println(F("\nWiFi connection timed out. Proceeding offline."));
   }
@@ -404,6 +447,17 @@ void initializeWebServer() {
 
     server.send(200, "application/json", "{\"success\":true}");
   });
+
+  // ---- Dashboard, served straight from the board (LittleFS) ----
+  // A lightweight build of webapp/index.html (gradient-mesh background,
+  // no video — the full video version is too large for on-board flash).
+  if (filesystemOk) {
+    server.serveStatic("/", LittleFS, "/index.html");
+    server.serveStatic("/index.html", LittleFS, "/index.html");
+    server.serveStatic("/manifest.json", LittleFS, "/manifest.json");
+    server.serveStatic("/sw.js", LittleFS, "/sw.js");
+    Serial.println(F("Dashboard routes registered: / /index.html /manifest.json /sw.js"));
+  }
 
   server.begin();
 }
