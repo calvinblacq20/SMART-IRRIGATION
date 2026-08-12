@@ -3,15 +3,14 @@
  * Handles application shell caching for offline access.
  */
 
-const CACHE_NAME = 'smart-irrigation-v1';
+const CACHE_NAME = 'smart-irrigation-v2';
 
-// Static assets forming the application shell
+// Static assets forming the application shell (self-contained single-file UI)
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './styles.css',
-  './app.js',
-  './manifest.json'
+  './manifest.json',
+  './bg.jpg'
 ];
 
 // Install Event: Cache Application Shell

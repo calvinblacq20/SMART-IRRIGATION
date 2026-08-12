@@ -39,9 +39,10 @@ Soil / DHT11 / LDR
   — the current connection layer: sensors, hysteresis control, REST + JSON API, mDNS. The dashboard
   is wired to this. (An earlier ESP32 build with LCD/LEDs/NVS lives in `firmware/smart_irrigation/`.)
 - **Simulation:** `firmware/wokwi/` — runs the whole thing in the browser at wokwi.com.
-- **Web dashboard:** `webapp/` — an installable **PWA** (Vite, vanilla JS) that talks directly
-  to the board's REST API, with an offline app-shell service worker, live 3 s polling, and a
-  full-bleed video background. Needs no build step to run (plain ES modules).
+- **Web dashboard:** `webapp/` — a self-contained single-file dashboard (`index.html`) that talks
+  directly to the board's REST API, with a canvas soil gauge, sparklines, a soil-trend chart,
+  Home/Data/Device/Settings views, a full-bleed video background, and a live + demo mode. It is
+  still installable (manifest + offline service worker). Needs no build step to run.
 - **Device API:** a Wi-Fi web server on the ESP8266 exposing the JSON the dashboard reads/writes.
 
 ### Web API contract (dashboard is coded to this)
@@ -66,7 +67,7 @@ mDNS is enabled — the board is reachable at `http://smart-irrigation.local`.
 | `firmware/smart_irrigation/` | earlier ESP32 build (DHT11, LCD, LEDs, NVS) |
 | `firmware/wokwi/` | Wokwi sim: `diagram.json`, `sketch.ino`, `libraries.txt` |
 | `firmware/wiring_diagram.png` | connection diagram |
-| `webapp/` | PWA dashboard — `index.html`, `app.js`, `styles.css`, `sw.js`, `manifest.json` (+ `package.json`/`vite.config.js` for the dev server) |
+| `webapp/` | Dashboard — single-file `index.html` + `sw.js`, `manifest.json` (installable/offline). `package.json`/`vite.config.js` are just for the dev server |
 | `webapp/bg.mp4`, `bg.jpg` | dashboard background video + poster |
 | `*.stl` / `*.step` | 3D enclosure (body + lid), 150×120×60 mm |
 | `Project29_*_Report.docx` | enclosure + firmware/software reports |
