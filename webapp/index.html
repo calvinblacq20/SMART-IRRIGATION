@@ -127,8 +127,8 @@ h1,h2,h3{margin:0; text-wrap:balance; letter-spacing:-.03em}
 /* ===================== CARDS ===================== */
 .grid{display:grid;gap:18px}
 .g-hero{grid-template-columns:1.06fr .94fr}
-.g-cards{grid-template-columns:repeat(4,1fr)}
-@media(max-width:900px){.g-hero{grid-template-columns:1fr}.g-cards{grid-template-columns:1fr 1fr}}
+.g-cards{grid-template-columns:repeat(3,1fr)}
+@media(max-width:900px){.g-hero{grid-template-columns:1fr}}
 .card{background:var(--surf);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);
   border:1px solid var(--glass-border);border-radius:var(--r);box-shadow:var(--shadow);padding:22px;
   animation:rise .55s cubic-bezier(.16,.84,.28,1) both; transition:transform .22s cubic-bezier(.16,.84,.28,1), box-shadow .22s, background .22s}
@@ -490,11 +490,14 @@ body{background:#0c2016}
   /* gauge card */
   #gauge{max-width:220px;height:148px}
 
-  /* metric mini-cards: 2 across */
-  .g-cards{grid-template-columns:1fr 1fr; gap:10px}
-  .metric{padding:14px 14px 10px}
-  .metric .val{font-size:28px}
-  .metric .top svg{width:32px;height:32px;padding:7px;border-radius:11px}
+  /* metric mini-cards: 3 across */
+  .g-cards{grid-template-columns:repeat(3,1fr); gap:8px}
+  .metric{padding:12px 12px 9px}
+  .metric .top{gap:4px}
+  .metric .name{font-size:10.5px; min-width:0; white-space:normal; line-height:1.15}
+  .metric .val{font-size:23px}
+  .metric .val .u{font-size:11px}
+  .metric .top svg{width:26px;height:26px;padding:5px;border-radius:9px;flex:none}
 
   /* chart height reduced */
   #chart{height:210px}
