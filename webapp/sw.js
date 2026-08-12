@@ -3,7 +3,7 @@
  * Handles application shell caching for offline access.
  */
 
-const CACHE_NAME = 'smart-irrigation-v2';
+const CACHE_NAME = 'smart-irrigation-v3';
 
 // Static assets forming the application shell (self-contained single-file UI)
 const ASSETS_TO_CACHE = [

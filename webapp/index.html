@@ -570,6 +570,7 @@ body{background:#0c2016}
       <p id="viewSub">Live soil, climate and pump control — automatic watering that knows when to start and when to stop.</p>
     </div>
     <div style="display:flex;gap:10px;align-items:center">
+      <button class="pill" id="btnInstall" style="display:none" title="Install this app">⬇&nbsp;Install</button>
       <button class="pill" id="statusPill"><span class="dot demo" id="statusDot"></span><span id="statusText">Demo mode</span></button>
       <button class="iconbtn gi" id="btnTheme" title="Toggle theme" aria-label="Toggle theme"><span id="themeGlyph">☾</span></button>
     </div>
@@ -1007,6 +1008,12 @@ render(); draw(); poll(); setInterval(poll,POLL);
 
 /* ---------- PWA: offline app-shell service worker ---------- */
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{});});}
+
+/* ---------- PWA: install prompt (shows only when the browser allows it) ---------- */
+let deferredInstall=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;$('btnInstall').style.display='';});
+$('btnInstall').onclick=async()=>{if(!deferredInstall)return;deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null;$('btnInstall').style.display='none';};
+window.addEventListener('appinstalled',()=>{deferredInstall=null;$('btnInstall').style.display='none';toast('App installed');});
 </script>
 </body>
 </html>
